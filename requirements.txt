@@ -1,0 +1,6 @@
+Flask
+flask-mysqldb
+python-dotenv
+pytest
+pytest-mock
+coverage

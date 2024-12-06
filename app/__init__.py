@@ -1,11 +1,11 @@
 from flask import Flask
-from dotenv import load_dotenv
-
-load_dotenv()
+from flask_cors import CORS
 
 def create_app(test_config=None):
     app = Flask(__name__)
 
+    CORS(app, supports_credentials=True, origins="http://localhost:3000")
+    
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:

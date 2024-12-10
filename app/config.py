@@ -1,15 +1,15 @@
+from datetime import timedelta
 from dotenv import load_dotenv
 import os
 
-def load_env_file(file_path):
-    if os.path.exists(file_path):
-        load_dotenv(dotenv_path=file_path)
-    else:
-        print(f"Warning: {file_path} not found.")
+load_dotenv()
 
-load_env_file('.env')
+# Secret key for signing session cookies and other cryptographic operations
+SECRET_KEY = '9f2a0b3c4e9d5f8a7c6e1d2b9a0f3c8b5e7d4a9c6f1e2b3d4f8a9b0c7d6e5a9f'
 
-SECRET_KEY = 'secret'
+# Session settings
+PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)  # Session will expire after 30 minutes
+
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'None'

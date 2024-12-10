@@ -9,7 +9,7 @@ CREATE TABLE events (
   name VARCHAR(255) NOT NULL,         -- Event's name
   start_time TIME NULL,               -- Start time
   end_time TIME NULL,                 -- End time
-  dates TEXT NOT NULL                 -- Selected dates, stored as a list 
+  dates JSON                          -- Selected dates, stored as a Json string 
 );
 
 DROP TABLE IF EXISTS users;
@@ -20,6 +20,17 @@ CREATE TABLE users (
   password_hash VARCHAR(255)             -- Hashed password for security
 );
 
+DROP TABLE IF EXISTS availability;
+CREATE TABLE availability (
+    id INT PRIMARY KEY,
+    user_id INT NOT NULL,
+    event_id INT NOT NULL,
+    time_slots JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
+
 
 INSERT INTO users (username, email, password_hash) VALUES
   ('admin', 'admin@gmail.com', 'scrypt:32768:8:1$UsmfbeH7UMeMQNaq$302f5204408ccd107b53db898a6adb0b0d23a20278fd1c929f8ef4707bee4721052168b8ff26a68ddf1dcc9f19b26eb01509ceb98798d626a0c1ad79837c9523'),
@@ -27,8 +38,6 @@ INSERT INTO users (username, email, password_hash) VALUES
 
 
 INSERT INTO events (name, start_time, end_time, dates) VALUES
-  ('Event 1', '10:00:00', '12:00:00', '2021-10-01, 2021-10-02, 2021-10-03'),
-  ('Event 2', '14:00:00', '16:00:00', '2021-10-01, 2021-10-02, 2021-10-03'),
-  ('Event 3', '18:00:00', '20:00:00', '2021-10-01, 2021-10-02, 2021-10-03');
-
-
+  ('Event 1', '10:00:00', '12:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
+  ('Event 2', '14:00:00', '16:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
+  ('Event 3', '18:00:00', '20:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]');

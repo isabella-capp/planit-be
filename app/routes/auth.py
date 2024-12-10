@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.db import query_db
 
@@ -22,12 +22,17 @@ def signin():
     password = data.get('password')
 
     user = _get_user(username)
-    if user is None or not check_password_hash(user['password_hash'], password):
+    print("User data:", user)
+    if not user or not check_password_hash(user['password_hash'], password):
         return jsonify({"message": "Invalid username or password", "status": "error"}), 401
 
     session.clear()
     session.permanent = True
     session['username'] = user['username']
+    
+    print('Session data after signin:', dict(session))
+    print("Cookies received in signin:", request.cookies)
+
     return jsonify({"message": "Login successful!"}), 200
 
 @bp.route('/signup', methods=['POST'])
@@ -48,13 +53,18 @@ def signup():
         query = "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s)"
         query_db(query, (username, email, hashed_password), commit=True)
     except Exception as e:
+        current_app.logger.error(f"Failed to create user: {e}")
         return jsonify({"error": "Failed to create user", "details": str(e)}), 500
 
+    print("User created successfully!")
+    print(username, email, hashed_password)
     return jsonify({"message": "Signup successful!"}), 201
 
 @bp.route('/user', methods=['GET'])
 def get_logged_in_user():
     username = session.get('username')
+    print('Session data in /user:', dict(session))
+    
     if username is None:
         return jsonify({"message": "No user logged in", "status": "error"}), 401
     return jsonify({'username': username}), 200
@@ -63,4 +73,3 @@ def get_logged_in_user():
 def logout():
     session.clear()
     return jsonify({"message": "Logout successful!"}), 200
-

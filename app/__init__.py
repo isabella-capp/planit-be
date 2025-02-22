@@ -20,7 +20,10 @@ def create_app(test_config=None):
     from .routes import auth
     app.register_blueprint(auth.bp)
 
-    from .routes import dashboard
-    app.register_blueprint(dashboard.bp)
+    from .routes import event
+    app.register_blueprint(event.bp)
+    
+    from .routes import availability
+    app.register_blueprint(availability.bp)
     
     return app

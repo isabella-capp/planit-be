@@ -14,10 +14,10 @@ def create_event():
     data = request.json
 
     event_name = data.get('name')
-    start_time = data.get('startTime')
-    end_time = data.get('endTime')
+    selectedTimes = data.get('selectedTimes')
     dates = data.get('datesJSON')
-
+    start_time = selectedTimes.get('startTime')
+    end_time = selectedTimes.get('endTime')
     event_id = random.randint(100000, 999999)
 
     print("Event data:", event_name, start_time, end_time, dates)
@@ -43,7 +43,7 @@ def serialize_event(event):
             event[key] = convert_seconds_to_time(value.total_seconds())
     return event
 
-@bp.route('/dashboard/<int:id>', methods=['GET'])
+@bp.route('/event/<int:id>', methods=['GET'])
 def get_event(id):
     try:
         query = "SELECT * FROM events WHERE id = %s"

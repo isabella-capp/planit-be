@@ -3,6 +3,16 @@ CREATE DATABASE IF NOT EXISTS mysql_db;
 
 USE mysql_db;
 
+DROP TABLE IF EXISTS availability;
+CREATE TABLE availability (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    event_id INT REFERENCES events(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL
+);
+
 DROP TABLE IF EXISTS events;
 CREATE TABLE events (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -18,17 +28,6 @@ CREATE TABLE users (
   username VARCHAR(255) UNIQUE,          -- User's username
   email VARCHAR(255) UNIQUE,             -- User's email (must be unique)
   password_hash VARCHAR(255)             -- Hashed password for security
-);
-
-DROP TABLE IF EXISTS availability;
-CREATE TABLE availability (
-    id INT PRIMARY KEY,
-    user_id INT NOT NULL,
-    event_id INT NOT NULL,
-    time_slots JSON NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
 
 

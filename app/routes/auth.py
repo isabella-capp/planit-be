@@ -11,6 +11,14 @@ def _get_user(username):
         return query_db(query, (username,), one=True)
     except Exception as e:
         return None
+    
+def _check_email(email):
+    """Helper function to retrieve user by username."""
+    try:
+        query = "SELECT * FROM users WHERE email = %s"
+        return query_db(query, (email,), one=True)
+    except Exception as e:
+        return None
 
 @bp.route('/signin', methods=['POST'])
 def signin():
@@ -21,6 +29,8 @@ def signin():
     username = data.get('username')
     password = data.get('password')
 
+    print("Signin data:", username, password)
+
     user = _get_user(username)
     print("User data:", user)
     if not user or not check_password_hash(user['password_hash'], password):
@@ -29,6 +39,7 @@ def signin():
     session.clear()
     session.permanent = True
     session['username'] = user['username']
+    session['id'] = user['id']
     
     print('Session data after signin:', dict(session))
     print("Cookies received in signin:", request.cookies)
@@ -48,6 +59,9 @@ def signup():
     if _get_user(username):
         return jsonify({"message": "Username already exists", "status": "error"}), 400
 
+    if _check_email(email):
+        return jsonify({"message": "Email already exists", "status": "error"}), 400
+    
     try:
         hashed_password = generate_password_hash(password)
         query = "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s)"
@@ -63,11 +77,12 @@ def signup():
 @bp.route('/user', methods=['GET'])
 def get_logged_in_user():
     username = session.get('username')
+    id = session.get('id')
     print('Session data in /user:', dict(session))
     
     if username is None:
         return jsonify({"message": "No user logged in", "status": "error"}), 401
-    return jsonify({'username': username}), 200
+    return jsonify({'username': username, 'id': id}), 200
 
 @bp.route('/logout', methods=['POST'])
 def logout():

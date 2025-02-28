@@ -8,9 +8,9 @@ CREATE TABLE availability (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     event_id INT REFERENCES events(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL
+    date VARCHAR(255) NOT NULL,
+    start_time VARCHAR(255) NOT NULL,
+    end_time VARCHAR(255) NOT NULL
 );
 
 DROP TABLE IF EXISTS events;

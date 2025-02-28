@@ -29,10 +29,8 @@ def signin():
     username = data.get('username')
     password = data.get('password')
 
-    print("Signin data:", username, password)
-
     user = _get_user(username)
-    print("User data:", user)
+
     if not user or not check_password_hash(user['password_hash'], password):
         return jsonify({"message": "Invalid username or password", "status": "error"}), 401
 
@@ -40,9 +38,6 @@ def signin():
     session.permanent = True
     session['username'] = user['username']
     session['id'] = user['id']
-    
-    print('Session data after signin:', dict(session))
-    print("Cookies received in signin:", request.cookies)
 
     return jsonify({"message": "Login successful!"}), 200
 
@@ -70,8 +65,6 @@ def signup():
         current_app.logger.error(f"Failed to create user: {e}")
         return jsonify({"error": "Failed to create user", "details": str(e)}), 500
 
-    print("User created successfully!")
-    print(username, email, hashed_password)
     return jsonify({"message": "Signup successful!"}), 201
 
 @bp.route('/user', methods=['GET'])
@@ -82,7 +75,15 @@ def get_logged_in_user():
     
     if username is None:
         return jsonify({"message": "No user logged in", "status": "error"}), 401
+    
     return jsonify({'username': username, 'id': id}), 200
+
+@bp.route('/check-session', methods=['GET'])
+def check_session():
+    if 'username' in session:
+        return jsonify({"status": "authenticated", "user": session['username']}), 200
+    else:
+        return jsonify({"status": "unauthenticated"}), 401
 
 @bp.route('/logout', methods=['POST'])
 def logout():

@@ -1,22 +1,14 @@
+from datetime import datetime
 from flask import (Blueprint, request, jsonify)
 
 from app.db import query_db
 
 bp = Blueprint('availability', __name__, url_prefix='/api')
 
-def formatted_data(availability_data): 
-    formatted_data = []
-    for entry in availability_data:
-        date = entry[0].strftime('%Y-%m-%d')  # Format date as 'YYYY-MM-DD'
-        start_time = entry[1].strftime('%H:%M')  # Format start time as 'HH:MM'
-        end_time = entry[2].strftime('%H:%M')  # Format end time as 'HH:MM'
-        formatted_data.append({
-            "date": date,
-            "start_time": start_time,
-            "end_time": end_time
-        })
-    print("Formatted data:", formatted_data)
-    return formatted_data
+def get_username(user_id):
+    query = "SELECT username FROM users WHERE id = %s;"
+    result = query_db(query, (user_id,), one=True)
+    return result.get("username") if result else None
 
 @bp.route('/availability', methods=['POST'])
 def save_availability():
@@ -70,11 +62,11 @@ def get_availability():
             WHERE user_id = %s AND event_id = %s;
         """
         availability_data = query_db(query, (user_id, event_id))
-        formatted_data = formatted_data(availability_data)
-        print("Formatted data:", formatted_data)
+        print("Availability data:", availability_data)
+    
         # Format the response data
-        if formatted_data:
-            return jsonify(formatted_data), 200
+        if availability_data:
+            return jsonify(availability_data), 200
         else:
             return jsonify([]), 200  # Return an empty list if no data found
 
@@ -82,7 +74,7 @@ def get_availability():
         return jsonify({"error": "Failed to fetch availability", "details": str(e)}), 500
     
 
-@bp.route('/api/get_group_availability', methods=['POST'])
+@bp.route('/get_group_availability', methods=['POST'])
 def get_group_availability():
     data = request.get_json()
     event_id = data.get("eventId")
@@ -92,24 +84,32 @@ def get_group_availability():
 
     try:
         query = """
-            SELECT date, start_time, end_time, COUNT(*) AS num_users
-            FROM availability
-            WHERE event_id = ?
-            GROUP BY date, start_time, end_time
-            ORDER BY date, start_time;
+            SELECT date, start_time, user_id 
+            FROM availability 
+            WHERE event_id = %s;
         """
         availability_data = query_db(query, (event_id,))
 
+        group_availability = {}
+
         for row in availability_data:
             date = row["date"]
-            time_slot = row["start_time"]  # Considero solo start_time per le celle della tabella
-            count = row["num_users"]
-
-            if date not in availability_data:
-                availability_data[date] = {}
+            time_slot = row["start_time"]
+            user_id = row["user_id"]  # Ensure this field exists in your table
             
-            availability_data[date][time_slot] = count
+            username = get_username(user_id)  # Get the username using the user_id
 
-        return jsonify({"availability": availability_data})
+            if username:  # Only proceed if a username is found
+                if date not in group_availability:
+                    group_availability[date] = {}
+                if time_slot not in group_availability[date]:
+                    group_availability[date][time_slot] = []
+                
+                group_availability[date][time_slot].append(username)
+
+        print("Group availability:", group_availability)
+
+        return jsonify({"availability": group_availability})
     except Exception as e:
+        print(f"Error fetching availability: {str(e)}")
         return jsonify({"error": "Failed to fetch availability", "details": str(e)}), 500

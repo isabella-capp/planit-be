@@ -1,11 +1,10 @@
 from datetime import timedelta
 import random
-from flask import (Blueprint, request, jsonify, current_app)
-
+from flask import (Blueprint, request, jsonify, session)
+from functools import wraps
 from app.db import query_db
 
 bp = Blueprint('dashboard', __name__, url_prefix='/private')
-
 
 @bp.route('/create_event', methods=['POST'])
 def create_event():
@@ -48,9 +47,13 @@ def get_event(id):
     try:
         query = "SELECT * FROM events WHERE id = %s"
         event = query_db(query, (id,), one=True)
+        print("Evento:", event)
+
+        if not event:
+            return jsonify({"error": f"Event with id {id} not found"}), 404
+        
         serialized_event = serialize_event(event)
         print("evento serializzato:", serialized_event)
     except Exception as e:
-        current_app.logger.error(f"Failed to fetch event with id {id}: {e}")
         return jsonify({"error": f"Failed to fetch event with id {id}", "details": str(e)}), 500
     return jsonify({"event": serialized_event})

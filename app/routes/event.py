@@ -29,19 +29,6 @@ def create_event():
 
     return jsonify({"message": "Event created successfully!", "event_id": event_id}), 200
 
-def convert_seconds_to_time(seconds):
-    time = str(timedelta(seconds=seconds))
-    time = time.split(" ")[-1][:5]
-    if time.endswith(":"):
-        time = time[:-1]
-    return time
-
-def serialize_event(event):
-    for key, value in event.items():
-        if isinstance(value, timedelta):
-            event[key] = convert_seconds_to_time(value.total_seconds())
-    return event
-
 @bp.route('/event/<int:id>', methods=['GET'])
 def get_event(id):
     try:
@@ -52,8 +39,40 @@ def get_event(id):
         if not event:
             return jsonify({"error": f"Event with id {id} not found"}), 404
         
-        serialized_event = serialize_event(event)
-        print("evento serializzato:", serialized_event)
     except Exception as e:
         return jsonify({"error": f"Failed to fetch event with id {id}", "details": str(e)}), 500
-    return jsonify({"event": serialized_event})
+    return jsonify({"event": event}), 200
+
+@bp.route('/user/events', methods=['POST'])
+def get_user_events():
+    data = request.get_json()
+    user_id = data.get('userId')
+
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+    
+    print("User ID:", user_id)
+
+    if not user_id:
+        return jsonify({"error": "User ID not provided"}), 400
+
+    try:
+        query = """
+           SELECT e.id AS event_id, 
+            e.name AS event_name, 
+            e.start_time AS event_start_time, 
+            e.end_time AS event_end_time, 
+            e.dates AS event_dates
+            FROM events e
+            JOIN availability a ON e.id = a.event_id
+            WHERE a.user_id = %s
+            GROUP BY e.id, e.name, e.start_time, e.end_time, e.dates;
+        """
+                
+        events = query_db(query, (user_id,))
+
+        print(events)
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch events", "details": str(e)}), 500
+
+    return jsonify({"events": events}), 200

@@ -81,7 +81,7 @@ def get_logged_in_user():
 @bp.route('/check-session', methods=['GET'])
 def check_session():
     if 'username' in session:
-        return jsonify({"status": "authenticated", "user": session['username']}), 200
+        return jsonify({"status": "authenticated", "user": session['username'], "id": session["id"]}), 200
     else:
         return jsonify({"status": "unauthenticated"}), 401
 

@@ -17,8 +17,8 @@ DROP TABLE IF EXISTS events;
 CREATE TABLE events (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,         -- Event's name
-  start_time TIME NULL,               -- Start time
-  end_time TIME NULL,                 -- End time
+  start_time VARCHAR(255) NULL,               -- Start time
+  end_time VARCHAR(255) NULL,                 -- End time
   dates JSON                          -- Selected dates, stored as a Json string 
 );
 

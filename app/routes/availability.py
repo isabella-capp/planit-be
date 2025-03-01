@@ -22,21 +22,28 @@ def save_availability():
         return jsonify({"error": "Dati mancanti"}), 400
     
     try:
+        delete_query = """
+                DELETE FROM availability
+                WHERE user_id = %s AND event_id = %s;
+            """
+        query_db(delete_query, (user_id, event_id), commit=True)
+
         for slot in slots:
             date = slot.get("date")
             start_time = slot.get("start_time")
             end_time = slot.get("end_time")
-
-            print("Slot data:", date, start_time, end_time)
-            # Check if the slot data is complete
-            if not date or not start_time or not end_time:
-                return jsonify({"error": "Slot data incomplete"}), 400
 
             query = """
                 INSERT INTO availability (user_id, event_id, date, start_time, end_time) 
                 VALUES (%s, %s, %s, %s, %s);
             """
             query_db(query, (user_id, event_id, date, start_time, end_time), commit=True)
+            
+
+            print("Slot data:", date, start_time, end_time)
+            # Check if the slot data is complete
+            if not date or not start_time or not end_time:
+                return jsonify({"error": "Slot data incomplete"}), 400
 
     except Exception as e:
         return jsonify({"error": "Failed to save availability", "details": str(e)}), 500

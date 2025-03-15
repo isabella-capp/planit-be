@@ -36,7 +36,6 @@ def query_db(query, args=(), one=False, commit=False):
         current_app.logger.error(f"Query failed: {e}")
         if commit:
             get_db().rollback()
-            return
         raise
     finally:
         cur.close()

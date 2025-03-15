@@ -10,6 +10,15 @@ def get_username(user_id):
     result = query_db(query, (user_id,), one=True)
     return result.get("username") if result else None
 
+@bp.route('/get_admin_username/<int:user_id>', methods=['GET'])
+def get_admin_username(user_id):
+    try:
+        result = get_username(user_id)  # Assuming the admin user has an ID of 
+        return jsonify({"username": result}), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch admin username", "details": str(e)}), 500
+
+
 @bp.route('/availability', methods=['POST'])
 def save_availability():
     data = request.get_json()
@@ -120,3 +129,30 @@ def get_group_availability():
     except Exception as e:
         print(f"Error fetching availability: {str(e)}")
         return jsonify({"error": "Failed to fetch availability", "details": str(e)}), 500
+
+@bp.route('/close_event_poll', methods=['POST'])
+def completed_poll():
+    data = request.get_json()
+    event_id = data.get("eventId")
+    date = data.get("winningDate")
+    time = data.get("winningTime")
+
+    if not event_id or not date or not time:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        delete_query = """
+                DELETE FROM closed_events
+                WHERE event_id = %s;
+            """
+        query_db(delete_query, (event_id,), commit=True)
+
+        query = """
+            INSERT INTO closed_events (event_id, event_date, event_time) 
+            VALUES (%s, %s, %s)
+        """
+        query_db(query, (event_id, date, time), commit=True)
+
+        return jsonify({"message": "Poll closed successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to close poll", "details": str(e)}), 500

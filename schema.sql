@@ -3,6 +3,14 @@ CREATE DATABASE IF NOT EXISTS mysql_db;
 
 USE mysql_db;
 
+DROP TABLE IF EXISTS closed_events;
+CREATE TABLE closed_events (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  event_id INT REFERENCES events(id) ON DELETE CASCADE,
+  event_date VARCHAR(255) NOT NULL,
+  event_time VARCHAR(255) NOT NULL
+);
+
 DROP TABLE IF EXISTS availability;
 CREATE TABLE availability (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -16,6 +24,7 @@ CREATE TABLE availability (
 DROP TABLE IF EXISTS events;
 CREATE TABLE events (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,         -- Event's name
   start_time VARCHAR(255) NULL,               -- Start time
   end_time VARCHAR(255) NULL,                 -- End time
@@ -36,7 +45,7 @@ INSERT INTO users (username, email, password_hash) VALUES
   ('isa_cap', 'isa.cappellino@gmail.com', 'scrypt:32768:8:1$dC69zmnF7O9P56E9$fa905c5125c931f3ace21cca11723e29cff668fb07cbd489822107f15c5a1fdee9025542c47e47c4fa485da8cf94727dbe3246fb1c9aa8a6c9ec2c60c67d16b1');
 
 
-INSERT INTO events (name, start_time, end_time, dates) VALUES
-  ('Event 1', '10:00:00', '12:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
-  ('Event 2', '14:00:00', '16:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
-  ('Event 3', '18:00:00', '20:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]');
+INSERT INTO events (user_id, name, start_time, end_time, dates) VALUES
+  (1, 'Event 1', '10:00:00', '12:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
+  (1, 'Event 2', '14:00:00', '16:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]'),
+  (1, 'Event 3', '18:00:00', '20:00:00', '["2021-10-01", "2021-10-02", "2021-10-03"]');

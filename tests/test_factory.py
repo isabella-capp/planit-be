@@ -1,5 +1,5 @@
 from flask import Flask
-from app.factory import create_app
+from app.__init__ import create_app
 
 def test_config():
     """ Test the create_app function with different configurations. """

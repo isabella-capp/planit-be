@@ -1,6 +1,6 @@
 import os
 import pytest
-from app.factory import create_app
+from app.__init__ import create_app
 from app.db import get_db, init_db
 
 from dotenv import load_dotenv
